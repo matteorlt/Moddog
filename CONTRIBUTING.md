@@ -24,14 +24,15 @@ npm install
 npm run watch      # rebuilds dist/ on every change
 ```
 
-Load `dist/` in `chrome://extensions` (Developer mode → Load unpacked), then click the reload icon after each rebuild.
+Load `dist/` in `chrome://extensions` (Developer mode → Load unpacked), then click the reload icon after each rebuild. For Firefox, `npm run build` also creates `dist-firefox/`: load it from `about:debugging`, or run `npm run firefox` to open a test Firefox with Moddog installed.
 
 | Command | What it does |
 |---|---|
 | `npm run check` | Everything CI runs: typecheck, lint, tests, build. **Run it before every PR** |
 | `npm test` | Unit tests (Vitest), `npm run test:watch` while you work |
 | `npm run format` | Auto-fixes formatting and simple lint issues (Biome) |
-| `npm run package` | Zips `dist/` into `moddog-<version>.zip` |
+| `npm run package` | Zips both builds: `moddog-<version>-chrome.zip` (Chrome, Edge, Opera) and `moddog-<version>-firefox.zip` |
+| `npm run lint:firefox` | Checks the Firefox build with Mozilla's `web-ext lint` |
 
 ## Writing detection rules
 

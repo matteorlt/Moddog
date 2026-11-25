@@ -1,6 +1,6 @@
 # Store assets
 
-Images for the Chrome Web Store listing and the GitHub repository. Temporary artwork: the logo may be redrawn later.
+Images for the store listings (Chrome Web Store, Firefox Add-ons, Opera add-ons) and the GitHub repository. Temporary artwork: the logo may be redrawn later.
 
 | File | Size | Where it goes |
 |---|---|---|

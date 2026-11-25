@@ -1,20 +1,28 @@
-// Zips dist/ into moddog-<version>.zip, ready for the Chrome Web Store or a GitHub release.
+// Zips the builds, ready for the stores or a GitHub release:
+//   moddog-<version>-chrome.zip   Chrome Web Store, Edge Add-ons, Opera add-ons (Opera GX)
+//   moddog-<version>-firefox.zip  addons.mozilla.org
 // Usage: npm run build && npm run package
-import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { zipSync } from "fflate";
 
 const { version } = JSON.parse(readFileSync("package.json", "utf8"));
-const files = {};
-const walk = (dir) => {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (statSync(path).isDirectory()) walk(path);
-    else files[relative("dist", path).replaceAll("\\", "/")] = readFileSync(path);
+const builds = { chrome: "dist", firefox: "dist-firefox" };
+
+for (const [target, dir] of Object.entries(builds)) {
+  if (!existsSync(join(dir, "manifest.json"))) {
+    throw new Error(`${dir}/manifest.json missing: run \`npm run build\` first.`);
   }
-};
-walk("dist");
-if (!files["manifest.json"]) throw new Error("dist/manifest.json missing: run `npm run build` first.");
-const out = `moddog-${version}.zip`;
-writeFileSync(out, zipSync(files, { level: 9 }));
-console.log(`${out} (${Object.keys(files).length} files)`);
+  const files = {};
+  const walk = (d) => {
+    for (const name of readdirSync(d)) {
+      const path = join(d, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else files[relative(dir, path).replaceAll("\\", "/")] = readFileSync(path);
+    }
+  };
+  walk(dir);
+  const out = `moddog-${version}-${target}.zip`;
+  writeFileSync(out, zipSync(files, { level: 9 }));
+  console.log(`${out} (${Object.keys(files).length} files)`);
+}

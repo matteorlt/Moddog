@@ -36,7 +36,7 @@ The AI only runs when local checks find something worth explaining, so clean rep
 
 ## Install (development build)
 
-Moddog isn't on the Chrome Web Store yet. To try it:
+Moddog isn't on the stores yet. To try it:
 
 ```bash
 git clone https://github.com/matteorlt/Moddog.git
@@ -45,9 +45,19 @@ npm install
 npm run build
 ```
 
-Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and select the `dist/` folder. Works in Chrome, Edge, Brave and other Chromium browsers.
+This creates two builds:
 
-Use `npm run watch` while developing and `npm run check` (typecheck, lint, tests, build) before opening a pull request. Every CI run also attaches a ready-to-test zip of the extension.
+| Browser | Build | How to load it |
+|---|---|---|
+| Chrome, Edge, Brave | `dist/` | `chrome://extensions` → enable **Developer mode** → **Load unpacked** → select `dist/` |
+| **Opera / Opera GX** | `dist/` | `opera://extensions` → enable **Developer mode** → **Load unpacked** → select `dist/` |
+| **Firefox** 140+ | `dist-firefox/` | `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → pick `dist-firefox/manifest.json` (or run `npm run firefox`) |
+
+Firefox removes temporary add-ons when it closes; that's normal until Moddog is on addons.mozilla.org.
+
+Using Ollama? Allow both browsers' extensions: `OLLAMA_ORIGINS=chrome-extension://*,moz-extension://*`.
+
+Use `npm run watch` while developing (Chrome build) and `npm run check` (typecheck, lint, tests, both builds, Firefox lint) before opening a pull request. Every CI run also attaches ready-to-test zips for both builds.
 
 ## Setup
 
@@ -108,7 +118,8 @@ GitHub page ──▶ content script (badge) ──▶ background service worker
 ## Roadmap
 
 - [ ] GitLab support
-- [ ] Firefox build
+- [x] Firefox build
+- [x] Opera / Opera GX (Chromium build)
 - [ ] Better `.class` / .NET decompilation for release files
 - [ ] YARA rules (WebAssembly)
 - [ ] Badge for mod authors ("Sniffed by Moddog")

@@ -14,7 +14,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "package": "node scripts/package.mjs",
-    "check": "npm run typecheck && npm run lint && npm test && npm run build"
+    "check": "npm run typecheck && npm run lint && npm test && npm run build && npm run lint:firefox",
+    "lint:firefox": "web-ext lint --source-dir dist-firefox",
+    "firefox": "web-ext run --source-dir dist-firefox --start-url https://github.com/A5b84/held-item-info"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0",
@@ -25,6 +27,7 @@
     "@types/chrome": "^0.3.8",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
-    "vitest": "^5.1.2"
+    "vitest": "^5.1.2",
+    "web-ext": "^10.8.0"
   }
 }
