@@ -19,10 +19,11 @@
       "run_at": "document_idle"
     }
   ],
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "unlimitedStorage", "activeTab"],
   "host_permissions": [
     "https://github.com/*",
     "https://api.github.com/*",
+    "https://codeload.github.com/*",
     "https://raw.githubusercontent.com/*",
     "https://objects.githubusercontent.com/*",
     "https://release-assets.githubusercontent.com/*"

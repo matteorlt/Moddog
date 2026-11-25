@@ -2,13 +2,16 @@ import type { Analysis, RepoRef } from "./types";
 
 /**
  * Local cache of past analyses, keyed by repository. An entry is reused as-is
- * when the default branch head and the release assets haven't changed; when
- * only new commits landed, the analysis restarts from the diff.
+ * when the head commit and the release files haven't changed. Otherwise the
+ * per-file hashes let the next analysis re-scan only the files that changed,
+ * without asking GitHub for a diff.
  */
 export interface CacheEntry {
   analysis: Analysis;
   /** name|size|updatedAt of each release asset: detects silently replaced files. */
   assetSignature: string;
+  /** sha256 of each scanned source file, by path. */
+  fileHashes: Record<string, string>;
 }
 
 const key = ({ owner, repo }: RepoRef) => `analysis:${owner.toLowerCase()}/${repo.toLowerCase()}`;

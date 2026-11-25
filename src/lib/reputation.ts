@@ -1,5 +1,5 @@
 import type { OwnerInfo, Release, RepoInfo } from "./github";
-import type { Finding } from "./types";
+import type { Finding, PageHints } from "./types";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -7,15 +7,21 @@ function ageInDays(iso: string, now: number): number {
   return (now - new Date(iso).getTime()) / DAY;
 }
 
-/** Cheap reputation signals from the GitHub API. They raise suspicion, never prove anything. */
+/**
+ * Cheap reputation signals. They raise suspicion, never prove anything.
+ * `repo` and `owner` come from the API and can be null when its limit is
+ * reached; `hints` (read from the GitHub page) then fill in what they can.
+ */
 export function reputationFindings(
-  repo: RepoInfo,
+  repo: RepoInfo | null,
   owner: OwnerInfo | null,
   release: Release | null,
+  hints: PageHints = {},
   now = Date.now(),
 ): Finding[] {
   const findings: Finding[] = [];
-  const repoAge = ageInDays(repo.createdAt, now);
+  const stars = repo?.stars ?? hints.stars;
+  const forks = repo?.forks ?? hints.forks;
 
   if (owner && ageInDays(owner.createdAt, now) < 30) {
     findings.push({
@@ -27,16 +33,19 @@ export function reputationFindings(
   }
 
   // Lots of stars on a very young repo is the classic "fake stars" pattern.
-  if (repoAge < 60 && repo.stars > 200) {
-    findings.push({
-      source: "reputation",
-      severity: "medium",
-      title: "Many stars on a very young repository",
-      detail: `${repo.stars} stars in ${Math.round(repoAge)} days. Stars can be bought.`,
-    });
+  if (repo && stars !== undefined) {
+    const repoAge = ageInDays(repo.createdAt, now);
+    if (repoAge < 60 && stars > 200) {
+      findings.push({
+        source: "reputation",
+        severity: "medium",
+        title: "Many stars on a very young repository",
+        detail: `${stars} stars in ${Math.round(repoAge)} days. Stars can be bought.`,
+      });
+    }
   }
 
-  if (repo.stars > 100 && repo.forks === 0) {
+  if (stars !== undefined && forks !== undefined && stars > 100 && forks === 0) {
     findings.push({
       source: "reputation",
       severity: "low",

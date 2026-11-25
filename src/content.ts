@@ -1,7 +1,7 @@
 import css from "./ui.css";
 import { parseRepoUrl } from "./lib/github";
 import { applyTheme, LEVEL_LABEL, noseIcon, renderPanel, type PanelState } from "./lib/render";
-import type { AnalyzeResponse, RepoRef, RiskLevel } from "./lib/types";
+import type { AnalyzeResponse, PageHints, RepoRef, RiskLevel } from "./lib/types";
 
 /*
  * Floating Moddog badge on GitHub repository pages. It lives in a shadow root
@@ -27,6 +27,18 @@ function syncTheme(root: HTMLElement): () => void {
   const obs = new MutationObserver(apply);
   obs.observe(html, { attributes: true, attributeFilter: ["data-color-mode"] });
   return () => obs.disconnect();
+}
+
+/** Reads a GitHub counter like <span id="repo-stars-counter-star" title="1,234">1.2k</span>. */
+function readCounter(id: string): number | undefined {
+  // The title holds the exact number; the visible text is rounded ("1.2k"), so only trust the title.
+  const title = document.getElementById(id)?.getAttribute("title")?.replace(/[^\d]/g, "");
+  return title ? Number(title) : undefined;
+}
+
+function sendPageHints(repo: RepoRef): void {
+  const hints: PageHints = { stars: readCounter("repo-stars-counter-star"), forks: readCounter("repo-network-counter") };
+  void chrome.runtime.sendMessage({ type: "pageHints", repo, hints });
 }
 
 function mount(repo: RepoRef): () => void {
@@ -83,6 +95,7 @@ function mount(repo: RepoRef): () => void {
     });
 
   const run = async (force: boolean) => {
+    sendPageHints(repo);
     state = { kind: "loading", repo };
     setBadge("unknown", "Sniffing…", true);
     render();

@@ -50,7 +50,7 @@ The settings page opens on install (or right-click the icon → *Options*):
 
 - **AI provider**: Anthropic (Claude), OpenAI, Google Gemini, OpenRouter, or **Ollama** (local, free, no key). Pick "None" to use local checks only.
 - **VirusTotal key** (optional): free personal key from [virustotal.com](https://www.virustotal.com/).
-- **GitHub token** (optional): raises GitHub's limit from 60 to 5,000 requests per hour. A fine-grained token with read-only access to public repositories is enough.
+- **GitHub token** (optional, rarely needed): see [GitHub limits](#github-limits) below.
 
 💡 Create dedicated API keys with a spending limit.
 
@@ -62,14 +62,28 @@ The settings page opens on install (or right-click the icon → *Options*):
 - VirusTotal receives file **hashes**, never files.
 - The AI only receives excerpts of public code from the repository being checked.
 
+## GitHub limits
+
+Moddog avoids GitHub's API wherever it can, so it works fine without a token:
+
+| What | How | Counts toward the API limit? |
+|---|---|---|
+| Default branch + latest commit | `github.com/<repo>.git/info/refs` (the protocol `git clone` uses) | No |
+| Source code | One zip from `codeload.github.com` | No |
+| What changed since last time | Compared locally with the hashes of each file in the cache | No |
+| Release files | Direct download links | No |
+| Reputation + release list | REST API with ETags (an unchanged answer is free) | Yes, about 3 calls per new repo |
+
+Without a token GitHub allows 60 API calls per hour, so about 20 new repositories per hour; already-sniffed ones cost almost nothing. When the limit is reached Moddog keeps going: it reads the release list and the star/fork counts from the GitHub page and only skips account-age checks. Very large repositories (zip over 40 MB) fall back to the API file list plus the most important files.
+
 ## How it works
 
 ```
 GitHub page ──▶ content script (badge) ──▶ background service worker
-                                            ├─ GitHub API: repo, owner, head commit, tree, latest release
+                                            ├─ head commit via git info/refs, release via API (+ETag) or page
                                             ├─ cache hit? (same commit + same release files) ──▶ instant verdict
-                                            ├─ reputation checks
-                                            ├─ static rules on source files (changed files only if cached)
+                                            ├─ reputation checks (API, or page counters if limited)
+                                            ├─ source zip from codeload ─▶ static rules (changed files only)
                                             ├─ release files: sha256 ─▶ VirusTotal, unzip/strings ─▶ static rules
                                             └─ AI (only if something was flagged) ─▶ structured JSON verdict
 ```

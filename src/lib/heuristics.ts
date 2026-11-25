@@ -44,7 +44,8 @@ export const RULES: Rule[] = [
     id: "minecraft-session",
     title: "Accesses Minecraft/launcher session tokens",
     severity: "high",
-    pattern: /(launcher_accounts(_microsoft_store)?\.json|launcher_profiles\.json|getSession\(\)\.getToken|accessToken\s*=)/i,
+    // Not a bare "accessToken =": build scripts use it to publish to Modrinth/CurseForge.
+    pattern: /(launcher_accounts(_microsoft_store)?\.json|launcher_profiles\.json|getSession\(\)\.(getToken|getAccessToken)|\bfunc_148254_d\b|session\.getAccessToken\(\))/i,
   },
   {
     id: "crypto-wallets",

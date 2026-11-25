@@ -58,10 +58,17 @@ export interface Settings {
   githubToken: string;
 }
 
+/** Numbers read from the GitHub page by the content script, used when the API is unavailable. */
+export interface PageHints {
+  stars?: number;
+  forks?: number;
+}
+
 export type Message =
   | { type: "analyze"; repo: RepoRef; force?: boolean }
   | { type: "getCached"; repo: RepoRef }
-  | { type: "openOptions" };
+  | { type: "openOptions" }
+  | { type: "pageHints"; repo: RepoRef; hints: PageHints };
 
 export type AnalyzeResponse =
   | { ok: true; analysis: Analysis }

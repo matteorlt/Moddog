@@ -98,12 +98,13 @@
         <section class="md-group">
           <h2>GitHub</h2>
           <p class="md-group-desc">
-            Optional. Without a token GitHub allows 60 requests per hour, which is about 3 to 5 repositories.
+            Optional. Moddog downloads code through links that don't count toward GitHub's limits. Only reputation
+            checks use the API (60 requests per hour without a token, about 20 repositories).
           </p>
           <div class="md-field">
             <label for="githubToken">GitHub token</label>
             <input class="md-input" id="githubToken" type="password" autocomplete="off" spellcheck="false" />
-            <p class="md-hint">A fine-grained token with read-only access to public repositories is enough.</p>
+            <p class="md-hint">Only useful if you sniff a lot of repositories. A fine-grained token with read-only access to public repositories is enough.</p>
           </div>
         </section>
 
