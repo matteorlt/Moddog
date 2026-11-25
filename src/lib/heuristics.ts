@@ -38,8 +38,10 @@ export const RULES: Rule[] = [
     id: "browser-credentials",
     title: "Reads browser saved passwords or cookies",
     severity: "critical",
+    // Chrome's exact file names as quoted strings (case-sensitive), or the profile path.
+    // Not a bare "cookies": UI text like "Accept cookies" is everywhere.
     pattern:
-      /(Login Data|Cookies|Local State)["'`]?\s*[),;]|User Data[\\/]+Default[\\/]+(Login Data|Network[\\/]+Cookies)/i,
+      /["'`](Login Data|Local State|Web Data)["'`]|User Data[\\/]+(Default|Profile \d+)[\\/]+(Login Data|Network[\\/]+Cookies|Local State)/,
   },
   {
     id: "minecraft-session",
@@ -114,25 +116,96 @@ export const RULES: Rule[] = [
   },
 ];
 
+/**
+ * Where a match was found. Security tools, rule lists, tests and docs are full
+ * of these strings as *data*; flagging them like real code would make every
+ * scanner (including Moddog itself) look like malware.
+ */
+export type HitContext = "code" | "test" | "pattern";
+
 export interface HeuristicHit {
   rule: Rule;
   location: string;
   /** A short excerpt around the match, sent to the AI for context. */
   excerpt: string;
+  /** The rule's severity, lowered when the context makes it unlikely to run. */
+  severity: Finding["severity"];
+  context: HitContext;
+  /** Why the severity was lowered, shown to the user and the AI. */
+  note?: string;
 }
 
 const EXCERPT_RADIUS = 300;
+const MAX_MATCHES_PER_RULE = 50;
+
+/** Tests, fixtures, examples and docs: not part of what a user installs or runs. */
+const TEST_PATH =
+  /(^|\/)(tests?|__tests__|spec|specs|fixtures?|examples?|samples?|docs?|testdata)\/|\.(test|spec)\.[a-z]+$|_test\.(go|py)$|(^|\/)test_[^/]+\.py$/i;
+
+/**
+ * A line that *defines* a pattern rather than doing the thing: regex syntax
+ * (`(?:`, `[\\/]`, `\s*`, `\d+`…) or an explicit regex/pattern API.
+ * Plain Windows paths like "\\discord\\Local Storage" don't count.
+ */
+const PATTERN_LINE =
+  /\(\?[:=!<]|\[\\\\\/\]|\[\\\/\\\\\]|\\[dswbDSWB][*+?{]|\bpattern\s*[:=]|\bnew RegExp\(|\bPattern\.compile\(|\bre\.(compile|search|match)\(|\byara\b|^\s*\$\w+\s*=\s*["{/]|^\s*(pattern\s*:\s*)?\/.+\/[dgimsuyv]*[,;)]?\s*$/i;
+
+function lineAround(text: string, index: number): string {
+  const start = text.lastIndexOf("\n", index) + 1;
+  const end = text.indexOf("\n", index);
+  return text.slice(start, end === -1 ? text.length : end);
+}
+
+const LOWER: Record<Finding["severity"], Finding["severity"]> = {
+  critical: "low",
+  high: "low",
+  medium: "low",
+  low: "info",
+  info: "info",
+};
 
 export function scanText(text: string, location: string): HeuristicHit[] {
   const hits: HeuristicHit[] = [];
+  const inTests = TEST_PATH.test(location.replace(/^.*!\//, ""));
+
   for (const rule of RULES) {
-    const m = rule.pattern.exec(text);
+    // Look at every match: a file can define a pattern on one line and use the
+    // behavior for real further down. The first "real" match wins.
+    const global = new RegExp(
+      rule.pattern.source,
+      rule.pattern.flags.includes("g") ? rule.pattern.flags : `${rule.pattern.flags}g`,
+    );
+    let chosen: RegExpExecArray | null = null;
+    let firstPatternMatch: RegExpExecArray | null = null;
+    let count = 0;
+    for (let m = global.exec(text); m && count < MAX_MATCHES_PER_RULE; m = global.exec(text), count++) {
+      if (m[0].length === 0) global.lastIndex++;
+      if (PATTERN_LINE.test(lineAround(text, m.index))) {
+        firstPatternMatch ??= m;
+      } else {
+        chosen = m;
+        break;
+      }
+    }
+    const m = chosen ?? firstPatternMatch;
     if (!m) continue;
+
     const start = Math.max(0, m.index - EXCERPT_RADIUS);
     const end = Math.min(text.length, m.index + m[0].length + EXCERPT_RADIUS);
     let excerpt = text.slice(start, end);
     if (rule.id === "large-base64") excerpt = `${m[0].slice(0, 120)}… (${m[0].length} chars)`;
-    hits.push({ rule, location, excerpt });
+
+    let context: HitContext = "code";
+    let note: string | undefined;
+    if (!chosen) {
+      context = "pattern";
+      note = "Looks like a detection pattern (e.g. in a security tool), not code that does this.";
+    } else if (inTests) {
+      context = "test";
+      note = "Found in a test, example or docs file: usually not part of what gets installed.";
+    }
+    const severity = context === "code" ? rule.severity : LOWER[rule.severity];
+    hits.push({ rule, location, excerpt, severity, context, note });
   }
   return hits;
 }

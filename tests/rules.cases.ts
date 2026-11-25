@@ -22,8 +22,11 @@ export const RULE_CASES: Record<string, { match: string[]; noMatch: string[] }> 
     noMatch: ['String discordLink = "https://discord.gg/abc";'],
   },
   "browser-credentials": {
-    match: [String.raw`File f = new File(local, "Google\Chrome\User Data\Default\Login Data");`],
-    noMatch: ["Please enter your login data below."],
+    match: [
+      String.raw`File f = new File(local, "Google\Chrome\User Data\Default\Login Data");`,
+      'string db = Path.Combine(profile, "Login Data");',
+    ],
+    noMatch: ["Please enter your login data below.", 'title: "Accept cookies",', 'label = "Clear Cookies";'],
   },
   "minecraft-session": {
     match: ['File f = new File(mcDir, "launcher_accounts.json");', "String t = mc.getSession().getToken();"],

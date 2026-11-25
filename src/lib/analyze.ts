@@ -53,7 +53,13 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promis
 }
 
 function hitToFinding(hit: HeuristicHit): Finding {
-  return { source: "heuristic", severity: hit.rule.severity, title: hit.rule.title, location: hit.location };
+  return {
+    source: "heuristic",
+    severity: hit.severity,
+    title: hit.rule.title,
+    location: hit.location,
+    detail: hit.note,
+  };
 }
 
 /** Level from local signals only (used when no AI ran). Heuristics alone never say "malware". */
@@ -290,9 +296,13 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
         repoName: `${ref.owner}/${ref.repo}`,
         context: `${repoLine} Latest release: ${release ? `${release.tagName} with assets ${release.assets.map((a) => a.name).join(", ") || "(none)"}` : "none"}.`,
         excerpts: hits
-          .sort((a, b) => SEVERITY_RANK[b.rule.severity] - SEVERITY_RANK[a.rule.severity])
+          .sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity])
           .slice(0, MAX_AI_EXCERPTS)
-          .map((h) => ({ location: h.location, rule: h.rule.title, excerpt: h.excerpt })),
+          .map((h) => ({
+            location: h.location,
+            rule: h.note ? `${h.rule.title}; ${h.note}` : h.rule.title,
+            excerpt: h.excerpt,
+          })),
         priorFindings,
       });
     } catch (e) {
