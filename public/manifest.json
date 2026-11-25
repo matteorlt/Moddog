@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Moddog",
+  "version": "0.1.0",
+  "description": "Sniff out malware in GitHub mods and tools before you install. Antivirus + AI analysis. Free & open source.",
+  "action": {
+    "default_title": "Moddog: sniff this repo",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["content.js"],
+      "css": ["ui.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://api.github.com/*",
+    "https://raw.githubusercontent.com/*",
+    "https://objects.githubusercontent.com/*",
+    "https://release-assets.githubusercontent.com/*"
+  ],
+  "optional_host_permissions": [
+    "https://www.virustotal.com/*",
+    "https://api.anthropic.com/*",
+    "https://api.openai.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://openrouter.ai/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ]
+}

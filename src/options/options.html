@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Moddog settings</title>
+    <link rel="stylesheet" href="ui.css" />
+  </head>
+  <body class="md-page md-options">
+    <h1>🐕 Moddog settings</h1>
+    <p class="md-hint">
+      Everything stays in this browser. Keys are only sent to the provider you choose, never to Moddog
+      (there is no Moddog server).
+    </p>
+
+    <form id="form">
+      <fieldset>
+        <legend>AI analysis</legend>
+        <label for="aiProvider">Provider</label>
+        <select id="aiProvider">
+          <option value="none">None (local checks only)</option>
+          <option value="ollama">Ollama (local, free, no key)</option>
+          <option value="anthropic">Anthropic (Claude)</option>
+          <option value="openai">OpenAI</option>
+          <option value="gemini">Google Gemini</option>
+          <option value="openrouter">OpenRouter</option>
+        </select>
+
+        <div id="keyRow">
+          <label for="aiApiKey">API key</label>
+          <input id="aiApiKey" type="password" autocomplete="off" spellcheck="false" />
+          <p class="md-hint">Tip: create a dedicated key with a spending limit.</p>
+        </div>
+
+        <div id="ollamaRow">
+          <label for="ollamaUrl">Ollama URL</label>
+          <input id="ollamaUrl" type="url" spellcheck="false" />
+          <p class="md-hint">
+            Start Ollama with <code>OLLAMA_ORIGINS=chrome-extension://*</code> so the extension can reach it.
+          </p>
+        </div>
+
+        <label for="aiModel">Model</label>
+        <input id="aiModel" type="text" spellcheck="false" list="modelSuggestions" />
+        <datalist id="modelSuggestions"></datalist>
+        <p class="md-hint" id="modelHint"></p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Antivirus (optional)</legend>
+        <label for="virusTotalKey">VirusTotal API key</label>
+        <input id="virusTotalKey" type="password" autocomplete="off" spellcheck="false" />
+        <p class="md-hint">
+          Free personal key from virustotal.com. Moddog only sends file hashes, never the files themselves.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>GitHub (optional)</legend>
+        <label for="githubToken">GitHub token</label>
+        <input id="githubToken" type="password" autocomplete="off" spellcheck="false" />
+        <p class="md-hint">
+          Without a token GitHub allows 60 requests/hour. A fine-grained token with read-only access to public
+          repositories is enough.
+        </p>
+      </fieldset>
+
+      <button type="submit" class="md-button">Save</button>
+      <span id="status" class="md-hint"></span>
+    </form>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

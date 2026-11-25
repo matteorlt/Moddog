@@ -1,0 +1,23 @@
+{
+  "name": "moddog",
+  "version": "0.1.0",
+  "description": "Let the dog sniff it first. Open-source browser extension that checks GitHub repos and release files for malware before you install them.",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.8",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2"
+  }
+}
