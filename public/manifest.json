@@ -16,7 +16,6 @@
     {
       "matches": ["https://github.com/*"],
       "js": ["content.js"],
-      "css": ["ui.css"],
       "run_at": "document_idle"
     }
   ],

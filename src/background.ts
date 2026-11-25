@@ -6,6 +6,11 @@ import type { AnalyzeResponse, Message } from "./lib/types";
 const inFlight = new Map<string, Promise<AnalyzeResponse>>();
 
 chrome.runtime.onMessage.addListener((message: Message, _sender, sendResponse) => {
+  if (message.type === "openOptions") {
+    void chrome.runtime.openOptionsPage();
+    return false;
+  }
+
   if (message.type === "getCached") {
     getCached(message.repo).then((entry) =>
       sendResponse(entry ? { ok: true, analysis: { ...entry.analysis, fromCache: true } } : { ok: false, error: "not cached" }),

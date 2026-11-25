@@ -24,6 +24,7 @@ const options = {
   target: "chrome120",
   sourcemap: watch ? "inline" : false,
   minify: !watch,
+  loader: { ".css": "text" },
   logLevel: "info",
 };
 

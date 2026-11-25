@@ -25,7 +25,7 @@ The AI only runs when local checks find something worth explaining, so clean rep
 | | Label | Meaning |
 |---|---|---|
 | 🟢 | **Good boy** | Nothing suspicious found |
-| 🟡 | **Sniffing…** | Something smells odd, have a look |
+| 🟡 | **Odd smell** | Something smells odd, have a look |
 | 🟠 | **Growling** | Risky behavior detected |
 | 🔴 | **Barking!** | Looks like malware, don't install |
 

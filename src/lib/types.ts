@@ -60,7 +60,8 @@ export interface Settings {
 
 export type Message =
   | { type: "analyze"; repo: RepoRef; force?: boolean }
-  | { type: "getCached"; repo: RepoRef };
+  | { type: "getCached"; repo: RepoRef }
+  | { type: "openOptions" };
 
 export type AnalyzeResponse =
   | { ok: true; analysis: Analysis }

@@ -54,13 +54,13 @@ function levelFromFindings(findings: Finding[]): RiskLevel {
 function summaryFor(level: RiskLevel, aiRan: boolean): string {
   switch (level) {
     case "clean":
-      return aiRan ? "Good boy: nothing suspicious found." : "Good boy: no red flags in the checked files.";
+      return aiRan ? "Nothing suspicious found." : "No red flags in the files that were checked.";
     case "suspicious":
-      return "Sniffing…: something smells odd. Have a look before installing.";
+      return "Something smells odd. Look at the signals before installing.";
     case "risky":
-      return "Growling: risky behavior detected.";
+      return "Risky behavior detected. Don't install unless you trust the author.";
     case "malware":
-      return "Barking! This looks like malware. Don't install it.";
+      return "This looks like malware. Don't install it.";
     default:
       return "Couldn't sniff this one.";
   }

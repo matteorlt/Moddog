@@ -2,71 +2,119 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Moddog settings</title>
     <link rel="stylesheet" href="ui.css" />
   </head>
-  <body class="md-page md-options">
-    <h1>🐕 Moddog settings</h1>
-    <p class="md-hint">
-      Everything stays in this browser. Keys are only sent to the provider you choose, never to Moddog
-      (there is no Moddog server).
-    </p>
+  <body class="md-root">
+    <main class="md-options-page">
+      <header>
+        <h1><span id="mark"></span>Moddog settings</h1>
+        <p class="md-lede">
+          Everything here stays in this browser. Keys are only sent to the service you pick, never to
+          Moddog: there is no Moddog server.
+        </p>
+      </header>
 
-    <form id="form">
-      <fieldset>
-        <legend>AI analysis</legend>
-        <label for="aiProvider">Provider</label>
-        <select id="aiProvider">
-          <option value="none">None (local checks only)</option>
-          <option value="ollama">Ollama (local, free, no key)</option>
-          <option value="anthropic">Anthropic (Claude)</option>
-          <option value="openai">OpenAI</option>
-          <option value="gemini">Google Gemini</option>
-          <option value="openrouter">OpenRouter</option>
-        </select>
-
-        <div id="keyRow">
-          <label for="aiApiKey">API key</label>
-          <input id="aiApiKey" type="password" autocomplete="off" spellcheck="false" />
-          <p class="md-hint">Tip: create a dedicated key with a spending limit.</p>
-        </div>
-
-        <div id="ollamaRow">
-          <label for="ollamaUrl">Ollama URL</label>
-          <input id="ollamaUrl" type="url" spellcheck="false" />
-          <p class="md-hint">
-            Start Ollama with <code>OLLAMA_ORIGINS=chrome-extension://*</code> so the extension can reach it.
+      <form id="form">
+        <section class="md-group">
+          <h2>AI review</h2>
+          <p class="md-group-desc">
+            Explains suspicious code in plain English and spots antivirus false positives. It only runs when the
+            local checks find something.
           </p>
+
+          <div class="md-field">
+            <span class="md-field-label">Provider</span>
+            <div class="md-choices" role="radiogroup" aria-label="AI provider">
+              <label class="md-choice">
+                <input type="radio" name="aiProvider" value="none" />
+                <strong>Off</strong>
+                <span>Local checks only.</span>
+              </label>
+              <label class="md-choice">
+                <input type="radio" name="aiProvider" value="ollama" />
+                <strong>Ollama</strong>
+                <span>Runs on your computer. Free, no key.</span>
+              </label>
+              <label class="md-choice">
+                <input type="radio" name="aiProvider" value="anthropic" />
+                <strong>Anthropic</strong>
+                <span>Claude models. Needs an API key.</span>
+              </label>
+              <label class="md-choice">
+                <input type="radio" name="aiProvider" value="openai" />
+                <strong>OpenAI</strong>
+                <span>Needs an API key.</span>
+              </label>
+              <label class="md-choice">
+                <input type="radio" name="aiProvider" value="gemini" />
+                <strong>Google Gemini</strong>
+                <span>Needs an API key.</span>
+              </label>
+              <label class="md-choice">
+                <input type="radio" name="aiProvider" value="openrouter" />
+                <strong>OpenRouter</strong>
+                <span>Many models, one key.</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="md-field" id="keyField">
+            <label for="aiApiKey">API key</label>
+            <input class="md-input" id="aiApiKey" type="password" autocomplete="off" spellcheck="false" />
+            <p class="md-hint">Use a dedicated key with a spending limit.</p>
+          </div>
+
+          <div class="md-field" id="ollamaField">
+            <label for="ollamaUrl">Ollama address</label>
+            <input class="md-input" id="ollamaUrl" type="url" spellcheck="false" />
+            <p class="md-hint">
+              Start Ollama with <code>OLLAMA_ORIGINS=chrome-extension://*</code> so the extension is allowed to reach it.
+            </p>
+          </div>
+
+          <div class="md-field" id="modelField">
+            <label for="aiModel">Model</label>
+            <input class="md-input" id="aiModel" type="text" spellcheck="false" list="modelSuggestions" />
+            <datalist id="modelSuggestions"></datalist>
+            <p class="md-hint" id="modelHint"></p>
+          </div>
+        </section>
+
+        <section class="md-group">
+          <h2>Antivirus</h2>
+          <p class="md-group-desc">
+            Optional. Release files are checked against VirusTotal by hash: the files themselves never leave your
+            browser.
+          </p>
+          <div class="md-field">
+            <label for="virusTotalKey">VirusTotal API key</label>
+            <input class="md-input" id="virusTotalKey" type="password" autocomplete="off" spellcheck="false" />
+            <p class="md-hint">Free personal key from your virustotal.com account.</p>
+          </div>
+        </section>
+
+        <section class="md-group">
+          <h2>GitHub</h2>
+          <p class="md-group-desc">
+            Optional. Without a token GitHub allows 60 requests per hour, which is about 3 to 5 repositories.
+          </p>
+          <div class="md-field">
+            <label for="githubToken">GitHub token</label>
+            <input class="md-input" id="githubToken" type="password" autocomplete="off" spellcheck="false" />
+            <p class="md-hint">A fine-grained token with read-only access to public repositories is enough.</p>
+          </div>
+        </section>
+
+        <div class="md-savebar">
+          <div class="md-savebar-inner">
+            <button type="submit" class="md-btn">Save</button>
+            <span id="status" class="md-status" role="status"></span>
+          </div>
         </div>
-
-        <label for="aiModel">Model</label>
-        <input id="aiModel" type="text" spellcheck="false" list="modelSuggestions" />
-        <datalist id="modelSuggestions"></datalist>
-        <p class="md-hint" id="modelHint"></p>
-      </fieldset>
-
-      <fieldset>
-        <legend>Antivirus (optional)</legend>
-        <label for="virusTotalKey">VirusTotal API key</label>
-        <input id="virusTotalKey" type="password" autocomplete="off" spellcheck="false" />
-        <p class="md-hint">
-          Free personal key from virustotal.com. Moddog only sends file hashes, never the files themselves.
-        </p>
-      </fieldset>
-
-      <fieldset>
-        <legend>GitHub (optional)</legend>
-        <label for="githubToken">GitHub token</label>
-        <input id="githubToken" type="password" autocomplete="off" spellcheck="false" />
-        <p class="md-hint">
-          Without a token GitHub allows 60 requests/hour. A fine-grained token with read-only access to public
-          repositories is enough.
-        </p>
-      </fieldset>
-
-      <button type="submit" class="md-button">Save</button>
-      <span id="status" class="md-hint"></span>
-    </form>
+      </form>
+    </main>
     <script type="module" src="options.js"></script>
   </body>
 </html>
