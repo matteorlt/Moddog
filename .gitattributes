@@ -1,0 +1,4 @@
+# Same line endings for everyone (Biome expects LF, even on Windows).
+* text=auto eol=lf
+*.png binary
+*.zip binary
