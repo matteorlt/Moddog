@@ -1,0 +1,41 @@
+name: False positive
+description: A safe mod or tool was flagged as dangerous.
+title: "[False positive] owner/repo"
+labels: [false-positive, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks! False positives are the most useful reports we get, they make Moddog trustworthy.
+  - type: input
+    id: repo
+    attributes:
+      label: Repository URL
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: dropdown
+    id: verdict
+    attributes:
+      label: Verdict shown
+      options: [Odd smell, Growling, Barking!]
+    validations:
+      required: true
+  - type: textarea
+    id: signals
+    attributes:
+      label: Signals shown
+      description: Copy the signals from the panel (rule names and files).
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why do you think it's safe?
+      description: For example, what the flagged code actually does.
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Moddog version and AI provider
+      placeholder: 0.1.0, Ollama qwen2.5-coder

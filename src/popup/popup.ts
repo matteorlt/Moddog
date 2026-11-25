@@ -1,5 +1,5 @@
 import { parseRepoUrl } from "../lib/github";
-import { renderPanel, type PanelHandlers, type PanelState } from "../lib/render";
+import { type PanelHandlers, type PanelState, renderPanel } from "../lib/render";
 import type { AnalyzeResponse, RepoRef } from "../lib/types";
 
 const panel = document.getElementById("panel")!;

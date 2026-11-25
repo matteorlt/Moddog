@@ -70,6 +70,4 @@ export type Message =
   | { type: "openOptions" }
   | { type: "pageHints"; repo: RepoRef; hints: PageHints };
 
-export type AnalyzeResponse =
-  | { ok: true; analysis: Analysis }
-  | { ok: false; error: string };
+export type AnalyzeResponse = { ok: true; analysis: Analysis } | { ok: false; error: string };

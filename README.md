@@ -2,6 +2,11 @@
 
 **Let the dog sniff it first.**
 
+[![CI](https://github.com/matteorlt/Moddog/actions/workflows/ci.yml/badge.svg)](https://github.com/matteorlt/Moddog/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/matteorlt/Moddog/actions/workflows/codeql.yml/badge.svg)](https://github.com/matteorlt/Moddog/actions/workflows/codeql.yml)
+[![License: GPL v3](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
+[![good first issues](https://img.shields.io/github/issues/matteorlt/Moddog/good%20first%20issue?label=good%20first%20issues)](https://github.com/matteorlt/Moddog/labels/good%20first%20issue)
+
 Moddog is a free, open-source browser extension that checks GitHub repositories (and their release files) for malware **before** you install them. It's built for the modding community: gamers downloading mods, tools and scripts who aren't developers and just want to know *"is this safe?"*.
 
 > ⚠️ Moddog gives a risk assessment, not a guarantee. Always be careful with files from unknown sources.
@@ -42,7 +47,7 @@ npm run build
 
 Then open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and select the `dist/` folder. Works in Chrome, Edge, Brave and other Chromium browsers.
 
-Use `npm run watch` while developing and `npm run check` (typecheck + build) before opening a pull request.
+Use `npm run watch` while developing and `npm run check` (typecheck, lint, tests, build) before opening a pull request. Every CI run also attaches a ready-to-test zip of the extension.
 
 ## Setup
 
@@ -110,7 +115,7 @@ GitHub page ──▶ content script (badge) ──▶ background service worker
 
 ## Contributing
 
-Contributions are very welcome, especially new detection rules and false-positive fixes. Read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+Contributions are very welcome, especially new detection rules and false-positive fixes. Start with [CONTRIBUTING.md](CONTRIBUTING.md), look for [`good first issue`](https://github.com/matteorlt/Moddog/labels/good%20first%20issue) labels, or ask in [Discussions](https://github.com/matteorlt/Moddog/discussions).
 
 Found a security issue in Moddog itself? See [SECURITY.md](SECURITY.md).
 

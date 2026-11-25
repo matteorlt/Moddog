@@ -139,7 +139,11 @@ function header(repo: RepoRef | null, handlers: PanelHandlers): HTMLElement {
     h("span", { class: "md-spacer" }),
   );
   if (handlers.onSettings) {
-    const b = h("button", { class: "md-icon-btn", type: "button", title: "Settings", "aria-label": "Settings" }, gearIcon());
+    const b = h(
+      "button",
+      { class: "md-icon-btn", type: "button", title: "Settings", "aria-label": "Settings" },
+      gearIcon(),
+    );
     b.onclick = handlers.onSettings;
     head.append(b);
   }
@@ -154,7 +158,7 @@ function header(repo: RepoRef | null, handlers: PanelHandlers): HTMLElement {
 function verdict(a: Analysis): HTMLElement {
   const rank = METER.indexOf(a.level);
   const meter = h("div", { class: "md-meter", "aria-hidden": "true" });
-  METER.forEach((_, i) => meter.append(h("span", { class: i <= rank ? "on" : "" })));
+  for (let i = 0; i < METER.length; i++) meter.append(h("span", { class: i <= rank ? "on" : "" }));
   return h(
     "section",
     { class: "md-section md-verdict", "data-level": a.level },
@@ -188,13 +192,13 @@ function signals(a: Analysis): HTMLElement | null {
       f.location ? h("code", { class: "md-signal-loc" }, f.location) : null,
       f.detail ? h("span", { class: "md-signal-detail" }, f.detail) : null,
     );
-  list.slice(0, SIGNALS_SHOWN).forEach((f) => ul.append(row(f)));
+  for (const f of list.slice(0, SIGNALS_SHOWN)) ul.append(row(f));
 
   const section = h("section", { class: "md-section" }, h("h3", { class: "md-label" }, `Signals · ${list.length}`), ul);
   if (list.length > SIGNALS_SHOWN) {
     const more = h("button", { class: "md-more", type: "button" }, `Show ${list.length - SIGNALS_SHOWN} more`);
     more.onclick = () => {
-      list.slice(SIGNALS_SHOWN).forEach((f) => ul.append(row(f)));
+      for (const f of list.slice(SIGNALS_SHOWN)) ul.append(row(f));
       more.remove();
     };
     section.append(more);
@@ -300,11 +304,13 @@ export function renderPanel(container: HTMLElement, state: PanelState, handlers:
     // purely as a hint of what's happening.
     const steps = h("ol", { class: "md-steps" });
     const items = LOADING_STEPS.map((s) => h("li", {}, s));
-    items.forEach((li) => steps.append(li));
+    steps.append(...items);
     let i = 0;
     const tick = () => {
       if (!steps.isConnected && i > 0) return;
-      items.forEach((li, j) => (li.className = j < i ? "done" : j === i ? "now" : ""));
+      items.forEach((li, j) => {
+        li.className = j < i ? "done" : j === i ? "now" : "";
+      });
       if (i < items.length - 1) {
         i++;
         setTimeout(tick, 1400);
@@ -335,7 +341,13 @@ export function renderPanel(container: HTMLElement, state: PanelState, handlers:
     actions.append(s);
   }
   container.append(
-    h("div", { class: "md-state md-error" }, h("h2", {}, "Couldn't sniff this one"), h("p", {}, state.message), actions),
+    h(
+      "div",
+      { class: "md-state md-error" },
+      h("h2", {}, "Couldn't sniff this one"),
+      h("p", {}, state.message),
+      actions,
+    ),
   );
 }
 

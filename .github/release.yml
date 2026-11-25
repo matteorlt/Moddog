@@ -1,0 +1,18 @@
+# Categories for auto-generated release notes, based on pull request labels.
+changelog:
+  exclude:
+    labels: [skip-changelog]
+    authors: [dependabot]
+  categories:
+    - title: New detection rules
+      labels: [detection-rules]
+    - title: False positive fixes
+      labels: [false-positive]
+    - title: Features
+      labels: [enhancement]
+    - title: Bug fixes
+      labels: [bug]
+    - title: Interface
+      labels: [ui]
+    - title: Other changes
+      labels: ["*"]

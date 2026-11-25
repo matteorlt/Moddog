@@ -3,19 +3,19 @@ import { assetToTexts, sha256Hex } from "./binary";
 import { getCached, putCached } from "./cache";
 import {
   downloadCapped,
-  gitRefs,
   GitHubClient,
-  rawFile,
-  RateLimitError,
-  scrapeLatestRelease,
-  sourceFromZip,
+  gitRefs,
   type OwnerInfo,
+  RateLimitError,
   type Release,
   type ReleaseAsset,
   type RepoInfo,
+  rawFile,
   type SourceFile,
+  scrapeLatestRelease,
+  sourceFromZip,
 } from "./github";
-import { isScannable, scanPriority, scanText, type HeuristicHit } from "./heuristics";
+import { type HeuristicHit, isScannable, scanPriority, scanText } from "./heuristics";
 import { reputationFindings } from "./reputation";
 import { getSettings } from "./settings";
 import type { Analysis, Finding, PageHints, RepoRef, RiskLevel, Settings } from "./types";
@@ -33,7 +33,10 @@ const SEVERITY_RANK: Record<Finding["severity"], number> = { info: 0, low: 1, me
 const LEVEL_RANK: Record<RiskLevel, number> = { unknown: -1, clean: 0, suspicious: 1, risky: 2, malware: 3 };
 
 function assetSignature(release: Release | null): string {
-  return (release?.assets ?? []).map((a) => `${a.name}|${a.size}|${a.updatedAt}`).sort().join(";");
+  return (release?.assets ?? [])
+    .map((a) => `${a.name}|${a.size}|${a.updatedAt}`)
+    .sort()
+    .join(";");
 }
 
 async function mapLimit<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
@@ -87,7 +90,10 @@ async function getRelease(gh: GitHubClient, ref: RepoRef): Promise<{ release: Re
   }
 }
 
-async function getReputation(gh: GitHubClient, ref: RepoRef): Promise<{ info: RepoInfo | null; owner: OwnerInfo | null }> {
+async function getReputation(
+  gh: GitHubClient,
+  ref: RepoRef,
+): Promise<{ info: RepoInfo | null; owner: OwnerInfo | null }> {
   try {
     const info = await gh.repo(ref);
     const owner = await gh.owner(info.ownerLogin).catch(() => null);
@@ -101,7 +107,11 @@ async function getReputation(gh: GitHubClient, ref: RepoRef): Promise<{ info: Re
  * Source files: the whole repo as one zip (no API call). If the archive is too
  * big, fall back to the API file list + the most important files one by one.
  */
-async function getSource(gh: GitHubClient, ref: RepoRef, sha: string): Promise<{ files: SourceFile[]; partial: boolean }> {
+async function getSource(
+  gh: GitHubClient,
+  ref: RepoRef,
+  sha: string,
+): Promise<{ files: SourceFile[]; partial: boolean }> {
   const keep = (path: string, size: number) => isScannable(path) && size <= MAX_SOURCE_FILE_BYTES;
   const fromZip = await sourceFromZip(ref, sha, MAX_ZIP_BYTES, keep);
   if (fromZip) return { files: fromZip, partial: false };
@@ -137,7 +147,13 @@ async function scanAsset(asset: ReleaseAsset, settings: Settings, vtAllowed: boo
       const f = vtFinding(asset.name, vt);
       if (f) findings.push(f);
     } catch (e) {
-      findings.push({ source: "antivirus", severity: "info", title: "VirusTotal lookup failed", detail: String(e), location: asset.name });
+      findings.push({
+        source: "antivirus",
+        severity: "info",
+        title: "VirusTotal lookup failed",
+        detail: String(e),
+        location: asset.name,
+      });
     }
   }
 
@@ -165,7 +181,8 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
       source: "reputation",
       severity: "info",
       title: "Reputation partly checked",
-      detail: "GitHub's hourly API limit was reached, so account age and star history were skipped. A GitHub token in the settings avoids this.",
+      detail:
+        "GitHub's hourly API limit was reached, so account age and star history were skipped. A GitHub token in the settings avoids this.",
     });
   }
 
@@ -182,7 +199,10 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
       source: "heuristic",
       severity: "info",
       title: "Source code not checked",
-      detail: e instanceof RateLimitError ? "This repository is too big to download at once and GitHub's API limit was reached." : String(e),
+      detail:
+        e instanceof RateLimitError
+          ? "This repository is too big to download at once and GitHub's API limit was reached."
+          : String(e),
     });
   }
   const previous = force ? undefined : cached?.fileHashes;
@@ -194,7 +214,9 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
     else hits.push(...scanText(file.text, file.path));
   }
   if (cached && unchanged.size) {
-    kept.push(...cached.analysis.findings.filter((f) => f.source === "heuristic" && f.location && unchanged.has(f.location)));
+    kept.push(
+      ...cached.analysis.findings.filter((f) => f.source === "heuristic" && f.location && unchanged.has(f.location)),
+    );
   }
   if (partial) {
     findings.push({
@@ -218,7 +240,11 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
     antivirus = cached.analysis.coverage.antivirus;
     kept.push(
       ...cached.analysis.findings.filter(
-        (f) => f.source !== "reputation" && f.source !== "ai" && f.location && names.some((n) => f.location === n || f.location!.startsWith(`${n}!/`)),
+        (f) =>
+          f.source !== "reputation" &&
+          f.source !== "ai" &&
+          f.location &&
+          names.some((n) => f.location === n || f.location!.startsWith(`${n}!/`)),
       ),
     );
   }
@@ -226,7 +252,12 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
     try {
       const r = await scanAsset(asset, settings, vtAllowed);
       if (!r) {
-        findings.push({ source: "heuristic", severity: "info", title: "Release file too big to check", location: asset.name });
+        findings.push({
+          source: "heuristic",
+          severity: "info",
+          title: "Release file too big to check",
+          location: asset.name,
+        });
         continue;
       }
       assetHashes[asset.name] = r.hash;
@@ -234,7 +265,13 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
       hits.push(...r.hits);
       antivirus ||= r.vtScanned;
     } catch (e) {
-      findings.push({ source: "heuristic", severity: "info", title: "Couldn't download release file", detail: String(e), location: asset.name });
+      findings.push({
+        source: "heuristic",
+        severity: "info",
+        title: "Couldn't download release file",
+        detail: String(e),
+        location: asset.name,
+      });
     }
   }
 
@@ -265,7 +302,11 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
 
   let level = ai ? ai.level : levelFromFindings(findings);
   // Strong antivirus consensus is never fully overruled by the AI.
-  if (ai && findings.some((f) => f.source === "antivirus" && f.severity === "critical") && LEVEL_RANK[level] < LEVEL_RANK.suspicious) {
+  if (
+    ai &&
+    findings.some((f) => f.source === "antivirus" && f.severity === "critical") &&
+    LEVEL_RANK[level] < LEVEL_RANK.suspicious
+  ) {
     level = "suspicious";
   }
 

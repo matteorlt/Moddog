@@ -52,11 +52,12 @@ export interface AiInput {
 
 function buildUserPrompt(input: AiInput): string {
   const prior = input.priorFindings
-    .map((f) => `- [${f.source}/${f.severity}] ${f.title}${f.location ? ` (${f.location})` : ""}${f.detail ? `: ${f.detail}` : ""}`)
+    .map(
+      (f) =>
+        `- [${f.source}/${f.severity}] ${f.title}${f.location ? ` (${f.location})` : ""}${f.detail ? `: ${f.detail}` : ""}`,
+    )
     .join("\n");
-  const excerpts = input.excerpts
-    .map((e) => `--- ${e.location} (flagged: ${e.rule}) ---\n${e.excerpt}`)
-    .join("\n\n");
+  const excerpts = input.excerpts.map((e) => `--- ${e.location} (flagged: ${e.rule}) ---\n${e.excerpt}`).join("\n\n");
   return `Repository: ${input.repoName}
 
 ${input.context}
@@ -111,7 +112,12 @@ async function callAnthropic(settings: Settings, system: string, user: string): 
   return response.content.map((b) => (b.type === "text" ? b.text : "")).join("");
 }
 
-async function callOpenAiCompatible(baseUrl: string, settings: Settings, system: string, user: string): Promise<string> {
+async function callOpenAiCompatible(
+  baseUrl: string,
+  settings: Settings,
+  system: string,
+  user: string,
+): Promise<string> {
   const res = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${settings.aiApiKey}` },

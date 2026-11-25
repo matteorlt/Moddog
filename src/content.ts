@@ -1,7 +1,7 @@
-import css from "./ui.css";
 import { parseRepoUrl } from "./lib/github";
-import { applyTheme, LEVEL_LABEL, noseIcon, renderPanel, type PanelState } from "./lib/render";
+import { applyTheme, LEVEL_LABEL, noseIcon, type PanelState, renderPanel } from "./lib/render";
 import type { AnalyzeResponse, PageHints, RepoRef, RiskLevel } from "./lib/types";
+import css from "./ui.css";
 
 /*
  * Floating Moddog badge on GitHub repository pages. It lives in a shadow root
@@ -37,7 +37,10 @@ function readCounter(id: string): number | undefined {
 }
 
 function sendPageHints(repo: RepoRef): void {
-  const hints: PageHints = { stars: readCounter("repo-stars-counter-star"), forks: readCounter("repo-network-counter") };
+  const hints: PageHints = {
+    stars: readCounter("repo-stars-counter-star"),
+    forks: readCounter("repo-network-counter"),
+  };
   void chrome.runtime.sendMessage({ type: "pageHints", repo, hints });
 }
 

@@ -1,0 +1,36 @@
+name: False negative
+description: Malware that Moddog didn't catch.
+title: "[False negative] owner/repo"
+labels: [false-negative, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: "⚠️ **Never attach live malware.** Link to the repository or to a public analysis (VirusTotal, a blog post…) instead."
+  - type: input
+    id: repo
+    attributes:
+      label: Repository URL
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What does the malware do?
+      description: Steals Discord tokens, downloads a payload, mines crypto…
+    validations:
+      required: true
+  - type: textarea
+    id: where
+    attributes:
+      label: Which file or code is malicious?
+      description: Path, release file, or a short harmless excerpt.
+  - type: input
+    id: analysis
+    attributes:
+      label: Public analysis link
+      placeholder: https://www.virustotal.com/gui/file/…
+  - type: input
+    id: verdict
+    attributes:
+      label: Verdict Moddog showed

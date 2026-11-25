@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/matteorlt/Moddog/discussions
+    about: Ask how something works, share ideas or show what you built.
+  - name: Security issue in Moddog itself
+    url: https://github.com/matteorlt/Moddog/security/advisories/new
+    about: Report it privately. Please don't open a public issue.

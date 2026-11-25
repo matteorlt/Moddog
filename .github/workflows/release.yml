@@ -1,0 +1,32 @@
+name: Release
+
+# Push a tag like v0.2.0 (matching package.json and the manifest) to publish
+# a GitHub release with the packaged extension attached.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tag matches version
+        run: node scripts/check-version.mjs "$GITHUB_REF_NAME"
+      - name: Full check
+        run: npm run check
+      - name: Package
+        run: npm run package
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" moddog-*.zip --title "Moddog $GITHUB_REF_NAME" --generate-notes --verify-tag

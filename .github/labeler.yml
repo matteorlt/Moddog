@@ -1,0 +1,21 @@
+detection-rules:
+  - changed-files:
+      - any-glob-to-any-file: ["src/lib/heuristics.ts", "src/lib/reputation.ts", "tests/rules.cases.ts"]
+ai:
+  - changed-files:
+      - any-glob-to-any-file: ["src/lib/ai.ts"]
+github-access:
+  - changed-files:
+      - any-glob-to-any-file: ["src/lib/github.ts", "src/lib/analyze.ts", "src/lib/cache.ts"]
+ui:
+  - changed-files:
+      - any-glob-to-any-file: ["src/ui.css", "src/lib/render.ts", "src/content.ts", "src/popup/**", "src/options/**"]
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ["**/*.md"]
+ci:
+  - changed-files:
+      - any-glob-to-any-file: [".github/**", "scripts/**", "build.mjs", "biome.json", "tsconfig.json"]
+permissions:
+  - changed-files:
+      - any-glob-to-any-file: ["public/manifest.json"]

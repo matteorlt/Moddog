@@ -13,10 +13,33 @@ const API = "https://api.github.com";
 
 /** GitHub paths that look like /owner/repo but are not repositories. */
 const RESERVED_OWNERS = new Set([
-  "about", "account", "apps", "codespaces", "collections", "contact", "customer-stories",
-  "enterprise", "events", "explore", "features", "issues", "login", "marketplace",
-  "new", "notifications", "orgs", "organizations", "pricing", "pulls", "search",
-  "security", "settings", "sponsors", "topics", "trending", "users",
+  "about",
+  "account",
+  "apps",
+  "codespaces",
+  "collections",
+  "contact",
+  "customer-stories",
+  "enterprise",
+  "events",
+  "explore",
+  "features",
+  "issues",
+  "login",
+  "marketplace",
+  "new",
+  "notifications",
+  "orgs",
+  "organizations",
+  "pricing",
+  "pulls",
+  "search",
+  "security",
+  "settings",
+  "sponsors",
+  "topics",
+  "trending",
+  "users",
 ]);
 
 export function parseRepoUrl(url: string): RepoRef | null {
@@ -171,7 +194,9 @@ export async function scrapeLatestRelease({ owner, repo }: RepoRef): Promise<Rel
   if (!tagMatch?.[1]) return null; // no release: GitHub stays on /releases
   const tag = decodeURIComponent(tagMatch[1]);
 
-  const html = await (await fetch(`https://github.com/${owner}/${repo}/releases/expanded_assets/${tagMatch[1]}`)).text();
+  const html = await (
+    await fetch(`https://github.com/${owner}/${repo}/releases/expanded_assets/${tagMatch[1]}`)
+  ).text();
   const prefix = `/${owner}/${repo}/releases/download/`;
   const seen = new Set<string>();
   const assets: ReleaseAsset[] = [];
@@ -220,8 +245,12 @@ export class GitHubClient {
 
   async repo({ owner, repo }: RepoRef): Promise<RepoInfo> {
     const r = await this.get<{
-      full_name: string; stargazers_count: number; forks_count: number;
-      created_at: string; pushed_at: string; archived: boolean;
+      full_name: string;
+      stargazers_count: number;
+      forks_count: number;
+      created_at: string;
+      pushed_at: string;
+      archived: boolean;
       owner: { login: string; type: string };
     }>(`/repos/${owner}/${repo}`);
     return {

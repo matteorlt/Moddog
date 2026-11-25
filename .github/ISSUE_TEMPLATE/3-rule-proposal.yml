@@ -1,0 +1,36 @@
+name: New detection rule
+description: Suggest a pattern Moddog should look for.
+title: "[Rule] "
+labels: [detection-rules]
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Malicious behavior
+      description: What does this code do to the user, and how do you recognize it?
+    validations:
+      required: true
+  - type: textarea
+    id: sample
+    attributes:
+      label: Example it should catch
+      description: A short, harmless snippet inspired by real malware.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: lookalike
+    attributes:
+      label: Legitimate look-alike it must ignore
+      description: Code from a normal mod that looks similar. It becomes the rule's "noMatch" test.
+      render: text
+  - type: input
+    id: source
+    attributes:
+      label: Source (report, sample analysis)
+  - type: checkboxes
+    id: pr
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd like to open the pull request myself

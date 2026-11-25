@@ -1,6 +1,7 @@
 // Bundles the extension into dist/ (load it as an unpacked extension).
-import * as esbuild from "esbuild";
+
 import { cpSync, mkdirSync, rmSync } from "node:fs";
+import * as esbuild from "esbuild";
 
 const watch = process.argv.includes("--watch");
 

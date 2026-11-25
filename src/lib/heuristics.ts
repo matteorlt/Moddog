@@ -38,20 +38,23 @@ export const RULES: Rule[] = [
     id: "browser-credentials",
     title: "Reads browser saved passwords or cookies",
     severity: "critical",
-    pattern: /(Login Data|Cookies|Local State)["'`]?\s*[),;]|User Data[\\/]+Default[\\/]+(Login Data|Network[\\/]+Cookies)/i,
+    pattern:
+      /(Login Data|Cookies|Local State)["'`]?\s*[),;]|User Data[\\/]+Default[\\/]+(Login Data|Network[\\/]+Cookies)/i,
   },
   {
     id: "minecraft-session",
     title: "Accesses Minecraft/launcher session tokens",
     severity: "high",
     // Not a bare "accessToken =": build scripts use it to publish to Modrinth/CurseForge.
-    pattern: /(launcher_accounts(_microsoft_store)?\.json|launcher_profiles\.json|getSession\(\)\.(getToken|getAccessToken)|\bfunc_148254_d\b|session\.getAccessToken\(\))/i,
+    pattern:
+      /(launcher_accounts(_microsoft_store)?\.json|launcher_profiles\.json|getSession\(\)\.(getToken|getAccessToken)|\bfunc_148254_d\b|session\.getAccessToken\(\))/i,
   },
   {
     id: "crypto-wallets",
     title: "Looks for crypto wallet files",
     severity: "high",
-    pattern: /(wallet\.dat|Exodus[\\/]+exodus\.wallet|Electrum[\\/]+wallets|MetaMask|nkbihfbeogaeaoehlefnkodbefgpgknn)/i,
+    pattern:
+      /(wallet\.dat|Exodus[\\/]+exodus\.wallet|Electrum[\\/]+wallets|MetaMask|nkbihfbeogaeaoehlefnkodbefgpgknn)/i,
   },
   {
     id: "powershell-encoded",
@@ -63,13 +66,15 @@ export const RULES: Rule[] = [
     id: "download-and-execute",
     title: "Downloads then executes a file",
     severity: "high",
-    pattern: /(Invoke-WebRequest|DownloadFile|DownloadString|urlretrieve|curl\s+-[sSLo]+|wget\s).{0,200}(Start-Process|Runtime\.getRuntime\(\)\.exec|ProcessBuilder|os\.system|subprocess|\.exe)/is,
+    pattern:
+      /(Invoke-WebRequest|DownloadFile|DownloadString|urlretrieve|curl\s+-[sSLo]+|wget\s).{0,200}(Start-Process|Runtime\.getRuntime\(\)\.exec|ProcessBuilder|os\.system|subprocess|\.exe)/is,
   },
   {
     id: "runtime-exec",
     title: "Spawns system processes",
     severity: "medium",
-    pattern: /(Runtime\.getRuntime\(\)\.exec|new ProcessBuilder|child_process|subprocess\.(Popen|call|run)|os\.system\(|Process\.Start\()/,
+    pattern:
+      /(Runtime\.getRuntime\(\)\.exec|new ProcessBuilder|child_process|subprocess\.(Popen|call|run)|os\.system\(|Process\.Start\()/,
   },
   {
     id: "dynamic-code",
@@ -134,8 +139,27 @@ export function scanText(text: string, location: string): HeuristicHit[] {
 
 /** Source files worth scanning, by extension. */
 export const SCANNABLE_EXTENSIONS = [
-  ".java", ".kt", ".kts", ".groovy", ".gradle", ".js", ".mjs", ".cjs", ".ts", ".py",
-  ".cs", ".lua", ".ps1", ".bat", ".cmd", ".sh", ".vbs", ".json", ".toml", ".yml", ".yaml",
+  ".java",
+  ".kt",
+  ".kts",
+  ".groovy",
+  ".gradle",
+  ".js",
+  ".mjs",
+  ".cjs",
+  ".ts",
+  ".py",
+  ".cs",
+  ".lua",
+  ".ps1",
+  ".bat",
+  ".cmd",
+  ".sh",
+  ".vbs",
+  ".json",
+  ".toml",
+  ".yml",
+  ".yaml",
 ];
 
 export function isScannable(path: string): boolean {
@@ -148,7 +172,10 @@ export function isScannable(path: string): boolean {
 /** Files that run automatically at build/install time get scanned first. */
 export function scanPriority(path: string): number {
   const lower = path.toLowerCase();
-  if (/(^|\/)(build\.gradle(\.kts)?|settings\.gradle(\.kts)?|package\.json|setup\.py|install\.(ps1|bat|sh))$/.test(lower)) return 0;
+  if (
+    /(^|\/)(build\.gradle(\.kts)?|settings\.gradle(\.kts)?|package\.json|setup\.py|install\.(ps1|bat|sh))$/.test(lower)
+  )
+    return 0;
   if (lower.startsWith(".github/workflows/")) return 1;
   if (/\.(ps1|bat|cmd|vbs|sh)$/.test(lower)) return 1;
   return 2;

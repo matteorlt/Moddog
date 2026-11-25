@@ -21,7 +21,9 @@ chrome.runtime.onMessage.addListener((message: Message, _sender, sendResponse) =
 
   if (message.type === "getCached") {
     getCached(message.repo).then((entry) =>
-      sendResponse(entry ? { ok: true, analysis: { ...entry.analysis, fromCache: true } } : { ok: false, error: "not cached" }),
+      sendResponse(
+        entry ? { ok: true, analysis: { ...entry.analysis, fromCache: true } } : { ok: false, error: "not cached" },
+      ),
     );
     return true;
   }
