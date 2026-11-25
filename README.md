@@ -67,6 +67,8 @@ The settings page opens on install (or right-click the icon → *Options*):
 - VirusTotal receives file **hashes**, never files.
 - The AI only receives excerpts of public code from the repository being checked.
 
+Full details in the [privacy policy](PRIVACY.md).
+
 ## GitHub limits
 
 Moddog avoids GitHub's API wherever it can, so it works fine without a token:
