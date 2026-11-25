@@ -1,5 +1,6 @@
 import { parseRepoUrl } from "./lib/github";
-import { applyTheme, LEVEL_LABEL, noseIcon, type PanelState, renderPanel } from "./lib/render";
+import { LEVEL_LABEL, noseIcon, type PanelState, renderPanel } from "./lib/render";
+import { watchTheme } from "./lib/theme";
 import type { AnalyzeResponse, PageHints, RepoRef, RiskLevel } from "./lib/types";
 import css from "./ui.css";
 
@@ -14,19 +15,6 @@ let cleanup: (() => void) | null = null;
 
 function send(message: unknown): Promise<AnalyzeResponse> {
   return chrome.runtime.sendMessage(message) as Promise<AnalyzeResponse>;
-}
-
-/** Follows GitHub's own theme setting (html[data-color-mode]). */
-function syncTheme(root: HTMLElement): () => void {
-  const html = document.documentElement;
-  const apply = () => {
-    const mode = html.getAttribute("data-color-mode");
-    applyTheme(root, mode === "light" || mode === "dark" ? mode : "auto");
-  };
-  apply();
-  const obs = new MutationObserver(apply);
-  obs.observe(html, { attributes: true, attributeFilter: ["data-color-mode"] });
-  return () => obs.disconnect();
 }
 
 /** Reads a GitHub counter like <span id="repo-stars-counter-star" title="1,234">1.2k</span>. */
@@ -73,7 +61,8 @@ function mount(repo: RepoRef): () => void {
   root.append(panel, badge);
   shadow.append(style, root);
   document.body.append(host);
-  const stopTheme = syncTheme(root);
+  // Follows the browser's light/dark mode (or the choice made in the settings).
+  const stopTheme = watchTheme(root);
 
   let state: PanelState = { kind: "idle", repo };
 

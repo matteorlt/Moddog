@@ -7,6 +7,8 @@
  */
 
 .md-root {
+  /* Native controls (scrollbars, inputs) follow the theme too. */
+  color-scheme: light;
   --ink: #1b1d1f;
   --ink-2: #4a4f55;
   --ink-3: #7b8188;
@@ -32,6 +34,7 @@
 }
 
 .md-root[data-theme="dark"] {
+  color-scheme: dark;
   --ink: #e9e7e2;
   --ink-2: #b4b1aa;
   --ink-3: #85837d;
@@ -49,6 +52,7 @@
 }
 @media (prefers-color-scheme: dark) {
   .md-root:not([data-theme="light"]) {
+    color-scheme: dark;
     --ink: #e9e7e2;
     --ink-2: #b4b1aa;
     --ink-3: #85837d;
@@ -576,6 +580,9 @@ body.md-popup {
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
+.md-choices-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
 .md-choice {
   position: relative;
   display: block;
@@ -637,7 +644,8 @@ body.md-popup {
 }
 
 @media (max-width: 520px) {
-  .md-choices {
+  .md-choices,
+  .md-choices-3 {
     grid-template-columns: 1fr;
   }
 }

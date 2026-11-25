@@ -1,6 +1,7 @@
-import { noseIcon } from "../lib/render";
+import { applyTheme, noseIcon } from "../lib/render";
 import { DEFAULT_MODELS, getSettings, saveSettings } from "../lib/settings";
-import type { AiProvider, Settings } from "../lib/types";
+import { watchTheme } from "../lib/theme";
+import type { AiProvider, Settings, ThemePreference } from "../lib/types";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -13,6 +14,7 @@ const ghToken = $<HTMLInputElement>("githubToken");
 const status = $<HTMLSpanElement>("status");
 
 $("mark").append(noseIcon(24));
+watchTheme(document.body);
 
 const MODEL_SUGGESTIONS: Partial<Record<AiProvider, string[]>> = {
   anthropic: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"],
@@ -28,6 +30,11 @@ const PROVIDER_ORIGINS: Partial<Record<AiProvider, string>> = {
 function provider(): AiProvider {
   const checked = form.querySelector<HTMLInputElement>('input[name="aiProvider"]:checked');
   return (checked?.value as AiProvider) ?? "none";
+}
+
+function theme(): ThemePreference {
+  const checked = form.querySelector<HTMLInputElement>('input[name="theme"]:checked');
+  return (checked?.value as ThemePreference) ?? "auto";
 }
 
 function refresh(): void {
@@ -65,11 +72,15 @@ async function init(): Promise<void> {
   ollamaUrl.value = s.ollamaUrl;
   vtKey.value = s.virusTotalKey;
   ghToken.value = s.githubToken;
+  const themeRadio = form.querySelector<HTMLInputElement>(`input[name="theme"][value="${s.theme}"]`);
+  if (themeRadio) themeRadio.checked = true;
   refresh();
 }
 
 form.addEventListener("change", (e) => {
-  if ((e.target as HTMLInputElement).name === "aiProvider") refresh();
+  const name = (e.target as HTMLInputElement).name;
+  if (name === "aiProvider") refresh();
+  if (name === "theme") applyTheme(document.body, theme()); // live preview before saving
   setStatus("Unsaved changes");
 });
 form.addEventListener("input", () => setStatus("Unsaved changes"));
@@ -83,6 +94,7 @@ form.addEventListener("submit", async (e) => {
     ollamaUrl: ollamaUrl.value.trim() || "http://localhost:11434",
     virusTotalKey: vtKey.value.trim(),
     githubToken: ghToken.value.trim(),
+    theme: theme(),
   };
 
   // Ask only for the hosts the user actually enabled (must happen in this click handler).

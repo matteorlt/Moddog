@@ -56,7 +56,11 @@ export interface Settings {
   ollamaUrl: string;
   virusTotalKey: string;
   githubToken: string;
+  /** "auto" follows the browser's light/dark setting. */
+  theme: ThemePreference;
 }
+
+export type ThemePreference = "auto" | "light" | "dark";
 
 /** Numbers read from the GitHub page by the content script, used when the API is unavailable. */
 export interface PageHints {

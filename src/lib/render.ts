@@ -1,4 +1,4 @@
-import type { Analysis, Finding, RepoRef, RiskLevel } from "./types";
+import type { Analysis, Finding, RepoRef, RiskLevel, ThemePreference } from "./types";
 
 /*
  * Renders the Moddog panel. Shared by the GitHub badge and the popup.
@@ -352,7 +352,7 @@ export function renderPanel(container: HTMLElement, state: PanelState, handlers:
 }
 
 /** Applies the right light/dark theme to a .md-root element. */
-export function applyTheme(root: HTMLElement, mode: "light" | "dark" | "auto"): void {
+export function applyTheme(root: HTMLElement, mode: ThemePreference): void {
   if (mode === "auto") root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", mode);
 }

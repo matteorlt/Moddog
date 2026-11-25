@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS: Settings = {
   ollamaUrl: "http://localhost:11434",
   virusTotalKey: "",
   githubToken: "",
+  theme: "auto",
 };
 
 /**

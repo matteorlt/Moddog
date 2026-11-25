@@ -1,8 +1,10 @@
 import { parseRepoUrl } from "../lib/github";
 import { type PanelHandlers, type PanelState, renderPanel } from "../lib/render";
+import { watchTheme } from "../lib/theme";
 import type { AnalyzeResponse, RepoRef } from "../lib/types";
 
 const panel = document.getElementById("panel")!;
+watchTheme(document.body);
 
 function show(state: PanelState, repo: RepoRef | null): void {
   const handlers: PanelHandlers = {
