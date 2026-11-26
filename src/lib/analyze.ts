@@ -12,7 +12,7 @@ import {
   type RepoInfo,
   rawFile,
   type SourceFile,
-  scrapeLatestRelease,
+  scrapeRelease,
   sourceFromZip,
 } from "./github";
 import { type HeuristicHit, isScannable, scanPriority, scanText } from "./heuristics";
@@ -86,13 +86,16 @@ function summaryFor(level: RiskLevel, aiRan: boolean): string {
   }
 }
 
-/** API first; on rate limit, read the release from github.com pages instead. */
+/**
+ * The release being looked at (ref.tag) or the latest one. API first; on rate
+ * limit, read it from github.com pages instead.
+ */
 async function getRelease(gh: GitHubClient, ref: RepoRef): Promise<{ release: Release | null; limited: boolean }> {
   try {
-    return { release: await gh.latestRelease(ref), limited: false };
+    return { release: await gh.release(ref), limited: false };
   } catch (e) {
     if (!(e instanceof RateLimitError)) throw e;
-    return { release: await scrapeLatestRelease(ref).catch(() => null), limited: true };
+    return { release: await scrapeRelease(ref).catch(() => null), limited: true };
   }
 }
 
@@ -294,7 +297,7 @@ export async function analyzeRepo(ref: RepoRef, force = false, hints: PageHints 
         : `Stars: ${hints.stars ?? "unknown"}, forks: ${hints.forks ?? "unknown"}.`;
       ai = await aiVerdict(settings, {
         repoName: `${ref.owner}/${ref.repo}`,
-        context: `${repoLine} Latest release: ${release ? `${release.tagName} with assets ${release.assets.map((a) => a.name).join(", ") || "(none)"}` : "none"}.`,
+        context: `${repoLine} ${ref.tag ? "Release being viewed" : "Latest release"}: ${release ? `${release.tagName} with assets ${release.assets.map((a) => a.name).join(", ") || "(none)"}` : "none"}.`,
         excerpts: hits
           .sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity])
           .slice(0, MAX_AI_EXCERPTS)

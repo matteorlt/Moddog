@@ -2,7 +2,7 @@ import { strToU8, zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 import { parseVerdict } from "../src/lib/ai";
 import { assetToTexts, extractStrings, sha256Hex } from "../src/lib/binary";
-import { parseRepoUrl } from "../src/lib/github";
+import { parseRepoUrl, repoKey } from "../src/lib/github";
 import { isScannable, scanPriority, scanText } from "../src/lib/heuristics";
 import { reputationFindings } from "../src/lib/reputation";
 
@@ -11,6 +11,45 @@ describe("parseRepoUrl", () => {
     expect(parseRepoUrl("https://github.com/foo/bar")).toEqual({ owner: "foo", repo: "bar" });
     expect(parseRepoUrl("https://github.com/foo/bar/tree/main/src")).toEqual({ owner: "foo", repo: "bar" });
     expect(parseRepoUrl("https://github.com/foo/bar.git")).toEqual({ owner: "foo", repo: "bar" });
+  });
+
+  it("keeps the release tag on release pages and download links", () => {
+    expect(parseRepoUrl("https://github.com/foo/bar/releases/tag/v1.2")).toEqual({
+      owner: "foo",
+      repo: "bar",
+      tag: "v1.2",
+    });
+    expect(parseRepoUrl("https://github.com/foo/bar/releases/tag/mod%2Fv2")).toEqual({
+      owner: "foo",
+      repo: "bar",
+      tag: "mod/v2",
+    });
+    expect(parseRepoUrl("https://github.com/foo/bar/releases/tag/mod/v2")).toEqual({
+      owner: "foo",
+      repo: "bar",
+      tag: "mod/v2",
+    });
+    expect(parseRepoUrl("https://github.com/foo/bar/releases/download/v1.2/Tool.exe")).toEqual({
+      owner: "foo",
+      repo: "bar",
+      tag: "v1.2",
+    });
+    // The release list and /latest have no tag: the latest release is checked.
+    expect(parseRepoUrl("https://github.com/foo/bar/releases")).toEqual({ owner: "foo", repo: "bar" });
+    expect(parseRepoUrl("https://github.com/foo/bar/releases/latest")).toEqual({ owner: "foo", repo: "bar" });
+  });
+
+  it("reads raw file links", () => {
+    expect(parseRepoUrl("https://raw.githubusercontent.com/foo/bar/main/install.ps1")).toEqual({
+      owner: "foo",
+      repo: "bar",
+    });
+    expect(parseRepoUrl("https://raw.githubusercontent.com/foo")).toBeNull();
+  });
+
+  it("gives each release its own key", () => {
+    expect(repoKey({ owner: "Foo", repo: "Bar" })).toBe("foo/bar");
+    expect(repoKey({ owner: "Foo", repo: "Bar", tag: "V1" })).toBe("foo/bar@V1");
   });
 
   it("ignores GitHub pages that aren't repositories", () => {

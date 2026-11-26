@@ -135,7 +135,9 @@ function header(repo: RepoRef | null, handlers: PanelHandlers): HTMLElement {
     "header",
     { class: "md-head" },
     h("span", { class: "md-brand" }, noseIcon(16), "Moddog"),
-    repo ? h("span", { class: "md-repo md-mono" }, `${repo.owner}/${repo.repo}`) : null,
+    repo
+      ? h("span", { class: "md-repo md-mono" }, `${repo.owner}/${repo.repo}${repo.tag ? ` @ ${repo.tag}` : ""}`)
+      : null,
     h("span", { class: "md-spacer" }),
   );
   if (handlers.onSettings) {
