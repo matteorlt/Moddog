@@ -34,3 +34,9 @@ body:
     id: verdict
     attributes:
       label: Verdict Moddog showed
+  - type: textarea
+    id: report
+    attributes:
+      label: Moddog report
+      description: Filled in automatically when you use the "Report it" link in the Moddog panel.
+      render: text

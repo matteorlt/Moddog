@@ -405,6 +405,21 @@
   border-top: 1px solid var(--rule);
   background: var(--paper-2);
 }
+.md-report {
+  padding: 8px 14px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-3);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.md-report a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.md-report a:hover {
+  color: var(--ink);
+}
 .md-foot .md-meta {
   flex: 1;
   min-width: 0;
