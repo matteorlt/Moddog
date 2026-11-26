@@ -1,17 +1,12 @@
+import { LEVEL_LABEL, type ReportKind, reportIssueUrl, reportKinds, SEV_TAG } from "./report";
 import type { Analysis, Finding, RepoRef, RiskLevel, ThemePreference } from "./types";
+
+export { LEVEL_LABEL };
 
 /*
  * Renders the Moddog panel. Shared by the GitHub badge and the popup.
  * All repo-controlled text goes through textContent: it never becomes HTML.
  */
-
-export const LEVEL_LABEL: Record<RiskLevel, string> = {
-  clean: "Good boy",
-  suspicious: "Odd smell",
-  risky: "Growling",
-  malware: "Barking!",
-  unknown: "Not sniffed",
-};
 
 const LEVEL_FALLBACK_TEXT: Record<RiskLevel, string> = {
   clean: "Nothing suspicious in the files that were checked.",
@@ -23,13 +18,6 @@ const LEVEL_FALLBACK_TEXT: Record<RiskLevel, string> = {
 
 const METER: RiskLevel[] = ["clean", "suspicious", "risky", "malware"];
 const SEV_ORDER: Finding["severity"][] = ["critical", "high", "medium", "low", "info"];
-const SEV_TAG: Record<Finding["severity"], string> = {
-  critical: "CRIT",
-  high: "HIGH",
-  medium: "MED",
-  low: "LOW",
-  info: "INFO",
-};
 const SIGNALS_SHOWN = 6;
 
 export type PanelState =
@@ -233,6 +221,34 @@ function checks(a: Analysis): HTMLElement {
   );
 }
 
+const REPORT_LINK: Record<ReportKind, { text: string; title: string }> = {
+  "false-positive": { text: "Safe? Report a false positive", title: "Opens a prefilled issue on GitHub" },
+  "false-negative": { text: "Malware? Report it", title: "Opens a prefilled issue on GitHub" },
+};
+
+/** One-click reports: opens Moddog's issue form on GitHub, prefilled. The user submits it themselves. */
+function reportLinks(a: Analysis): HTMLElement | null {
+  const kinds = reportKinds(a.level);
+  if (!kinds.length) return null;
+  const version = chrome.runtime.getManifest().version;
+  const row = h("div", { class: "md-report" });
+  kinds.forEach((kind, i) => {
+    if (i) row.append(h("span", { "aria-hidden": "true" }, " · "));
+    const link = h(
+      "a",
+      {
+        href: reportIssueUrl(a, kind, version),
+        target: "_blank",
+        rel: "noopener noreferrer",
+        title: REPORT_LINK[kind].title,
+      },
+      REPORT_LINK[kind].text,
+    );
+    row.append(link);
+  });
+  return row;
+}
+
 function footer(a: Analysis, handlers: PanelHandlers): DocumentFragment {
   const frag = document.createDocumentFragment();
   const meta = h(
@@ -244,6 +260,8 @@ function footer(a: Analysis, handlers: PanelHandlers): DocumentFragment {
     "A risk assessment, not a guarantee.",
   );
   const foot = h("footer", { class: "md-foot" }, meta);
+  const report = reportLinks(a);
+  if (report) frag.append(report);
   if (handlers.onSniff) {
     const b = h("button", { class: "md-btn md-btn-ghost", type: "button" }, "Re-sniff");
     b.title = "Analyze again from scratch";
