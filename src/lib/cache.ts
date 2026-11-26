@@ -1,3 +1,4 @@
+import { repoKey } from "./github";
 import type { Analysis, RepoRef } from "./types";
 
 /**
@@ -14,7 +15,8 @@ export interface CacheEntry {
   fileHashes: Record<string, string>;
 }
 
-const key = ({ owner, repo }: RepoRef) => `analysis:${owner.toLowerCase()}/${repo.toLowerCase()}`;
+// One entry per repository, plus one per release tag looked at directly.
+const key = (repo: RepoRef) => `analysis:${repoKey(repo)}`;
 
 export async function getCached(repo: RepoRef): Promise<CacheEntry | null> {
   const k = key(repo);

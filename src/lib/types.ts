@@ -3,6 +3,8 @@ export type RiskLevel = "clean" | "suspicious" | "risky" | "malware" | "unknown"
 export interface RepoRef {
   owner: string;
   repo: string;
+  /** Release tag being looked at (on a /releases/tag/… page). Without it, the latest release is checked. */
+  tag?: string;
 }
 
 export interface Finding {

@@ -42,6 +42,12 @@ const RESERVED_OWNERS = new Set([
   "users",
 ]);
 
+/**
+ * The repository a page belongs to, from:
+ * - any github.com/<owner>/<repo>/… page; on /releases/tag/<tag> (and release
+ *   download links) the tag is kept so that exact release gets checked
+ * - raw file links: raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>
+ */
 export function parseRepoUrl(url: string): RepoRef | null {
   let u: URL;
   try {
@@ -49,10 +55,32 @@ export function parseRepoUrl(url: string): RepoRef | null {
   } catch {
     return null;
   }
-  if (u.hostname !== "github.com") return null;
-  const [owner, repo] = u.pathname.split("/").filter(Boolean);
-  if (!owner || !repo || RESERVED_OWNERS.has(owner.toLowerCase())) return null;
-  return { owner, repo: repo.replace(/\.git$/, "") };
+  const parts = u.pathname.split("/").filter(Boolean);
+  const [owner, rawRepo, section, kind, rawTag] = parts;
+  if (!owner || !rawRepo) return null;
+  const repo = rawRepo.replace(/\.git$/, "");
+  if (!repo) return null;
+
+  if (u.hostname === "raw.githubusercontent.com") return { owner, repo };
+  if (u.hostname !== "github.com" || RESERVED_OWNERS.has(owner.toLowerCase())) return null;
+
+  if (section === "releases" && (kind === "tag" || kind === "download") && rawTag) {
+    let tag: string;
+    try {
+      // Tags may contain "/" (e.g. "mod/v1.2"): on tag pages everything after /tag/ is the tag.
+      tag = decodeURIComponent(kind === "tag" ? parts.slice(4).join("/") : rawTag);
+    } catch {
+      return { owner, repo };
+    }
+    return { owner, repo, tag };
+  }
+  return { owner, repo };
+}
+
+/** Identifies a repo + release tag, e.g. for caches and de-duplication. */
+export function repoKey({ owner, repo, tag }: RepoRef): string {
+  const base = `${owner}/${repo}`.toLowerCase();
+  return tag ? `${base}@${tag}` : base;
 }
 
 export class RateLimitError extends Error {
@@ -185,18 +213,24 @@ export async function rawFile({ owner, repo }: RepoRef, sha: string, path: strin
 
 // ---------- scraping fallbacks (used only when the API limit is reached) ----------
 
-/** Latest release read from github.com pages instead of the API. */
-export async function scrapeLatestRelease({ owner, repo }: RepoRef): Promise<Release | null> {
-  const res = await fetch(`https://github.com/${owner}/${repo}/releases/latest`);
-  if (!res.ok) return null;
-  const tagMatch = /\/releases\/tag\/([^/?#]+)/.exec(res.url);
-  await res.body?.cancel();
-  if (!tagMatch?.[1]) return null; // no release: GitHub stays on /releases
-  const tag = decodeURIComponent(tagMatch[1]);
+/** Latest release (or the one tagged `ref.tag`) read from github.com pages instead of the API. */
+export async function scrapeRelease({ owner, repo, tag: wanted }: RepoRef): Promise<Release | null> {
+  let encodedTag: string;
+  if (wanted) {
+    encodedTag = encodeURIComponent(wanted);
+  } else {
+    const res = await fetch(`https://github.com/${owner}/${repo}/releases/latest`);
+    if (!res.ok) return null;
+    const tagMatch = /\/releases\/tag\/([^/?#]+)/.exec(res.url);
+    await res.body?.cancel();
+    if (!tagMatch?.[1]) return null; // no release: GitHub stays on /releases
+    encodedTag = tagMatch[1];
+  }
+  const tag = wanted ?? decodeURIComponent(encodedTag);
 
-  const html = await (
-    await fetch(`https://github.com/${owner}/${repo}/releases/expanded_assets/${tagMatch[1]}`)
-  ).text();
+  const page = await fetch(`https://github.com/${owner}/${repo}/releases/expanded_assets/${encodedTag}`);
+  if (!page.ok) return null;
+  const html = await page.text();
   const prefix = `/${owner}/${repo}/releases/download/`;
   const seen = new Set<string>();
   const assets: ReleaseAsset[] = [];
@@ -270,13 +304,17 @@ export class GitHubClient {
     return { createdAt: u.created_at, publicRepos: u.public_repos, followers: u.followers };
   }
 
-  /** Latest release, or null if the repository has none. Throws RateLimitError when limited. */
-  async latestRelease({ owner, repo }: RepoRef): Promise<Release | null> {
+  /**
+   * The release tagged `ref.tag`, or the latest one without a tag. Null if there
+   * is none. Throws RateLimitError when limited.
+   */
+  async release({ owner, repo, tag }: RepoRef): Promise<Release | null> {
+    const which = tag ? `tags/${encodeURIComponent(tag)}` : "latest";
     try {
       const r = await this.get<{
         tag_name: string;
         assets: { name: string; size: number; browser_download_url: string; updated_at: string }[];
-      }>(`/repos/${owner}/${repo}/releases/latest`);
+      }>(`/repos/${owner}/${repo}/releases/${which}`);
       return {
         tagName: r.tag_name,
         assets: r.assets.map((a) => ({

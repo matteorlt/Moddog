@@ -1,11 +1,12 @@
-import { parseRepoUrl } from "./lib/github";
+import { parseRepoUrl, repoKey } from "./lib/github";
 import { LEVEL_LABEL, noseIcon, type PanelState, renderPanel } from "./lib/render";
 import { watchTheme } from "./lib/theme";
 import type { AnalyzeResponse, PageHints, RepoRef, RiskLevel } from "./lib/types";
 import css from "./ui.css";
 
 /*
- * Floating Moddog badge on GitHub repository pages. It lives in a shadow root
+ * Floating Moddog badge on GitHub repository pages (release pages included) and
+ * raw file links (raw.githubusercontent.com). It lives in a shadow root
  * so GitHub's styles can't reach it (and ours can't leak into GitHub).
  */
 const HOST_ID = "moddog-host";
@@ -29,6 +30,8 @@ function sendPageHints(repo: RepoRef): void {
     stars: readCounter("repo-stars-counter-star"),
     forks: readCounter("repo-network-counter"),
   };
+  // Raw file pages have no counters: don't overwrite hints read on a repo page.
+  if (hints.stars === undefined && hints.forks === undefined) return;
   void chrome.runtime.sendMessage({ type: "pageHints", repo, hints });
 }
 
@@ -135,7 +138,7 @@ function mount(repo: RepoRef): () => void {
 
 function check(): void {
   const repo = parseRepoUrl(location.href);
-  const key = repo ? `${repo.owner}/${repo.repo}`.toLowerCase() : "";
+  const key = repo ? repoKey(repo) : "";
   if (key === currentKey) return;
   currentKey = key;
   cleanup?.();
