@@ -2,7 +2,7 @@
 //   moddog-<version>-chrome.zip   Chrome Web Store, Edge Add-ons, Opera add-ons (Opera GX)
 //   moddog-<version>-firefox.zip  addons.mozilla.org
 // Usage: npm run build && npm run package
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { zipSync } from "fflate";
 
@@ -15,10 +15,12 @@ for (const [target, dir] of Object.entries(builds)) {
   }
   const files = {};
   const walk = (d) => {
-    for (const name of readdirSync(d)) {
-      const path = join(d, name);
-      if (statSync(path).isDirectory()) walk(path);
-      else files[relative(dir, path).replaceAll("\\", "/")] = readFileSync(path);
+    // Dirent types come with the listing itself: no separate stat() call that
+    // could go stale before the read (CodeQL js/file-system-race).
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const path = join(d, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (entry.isFile()) files[relative(dir, path).replaceAll("\\", "/")] = readFileSync(path);
     }
   };
   walk(dir);
